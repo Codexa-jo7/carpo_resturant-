@@ -11,6 +11,28 @@ document.getElementById('copy-address').addEventListener('click', async () => {
 });
 
 const categories = window.CARBO_MENU;
+function foodImage(category, name) {
+  if (name.includes('رايز') || name.includes('ريزو') || name.includes('أرز')) return 'rice';
+  if (name.includes('سيزر')) return 'salad';
+  if (name.includes('الصحية')) return 'healthy';
+  if (name.includes('الأطفال')) return 'chickenburger';
+  if (category === 'الإضافات والمشروبات') {
+    if (/مشروبات|مياه|شنينة/.test(name)) return 'drinks';
+    if (/جارلك/.test(name)) return 'bread';
+    if (/حلقات/.test(name)) return 'onionrings';
+    if (/ودجز/.test(name)) return 'wedges';
+    if (/بطاطا/.test(name)) return 'fries';
+    return 'sauce';
+  }
+  if (category === 'وينجز وبونلس') return name === 'وينجز' ? 'wings' : 'boneless';
+  return ({'ساندويشات شاورما':'shawarma','وجبات شاورما':'family','الوجبات العائلية':'family','شاورما بالوزن':'family','دجاج على الفحم':'chicken','كالزوني':'calzone','برجر دجاج':'chickenburger','أنجوس بيف برجر':'beefburger','بيتزا':'pizza','سناكات':'sandwich'})[category] || 'healthy';
+}
+const viewer = document.getElementById('food-viewer');
+const viewerImage = document.getElementById('viewer-image');
+const viewerTitle = document.getElementById('viewer-title');
+document.getElementById('viewer-close').addEventListener('click', () => viewer.close());
+viewer.addEventListener('click', event => { if (event.target === viewer) viewer.close(); });
+
 const tabs = document.getElementById('category-tabs');
 const content = document.getElementById('menu-content');
 const search = document.getElementById('menu-search');
@@ -48,6 +70,14 @@ function renderMenu() {
     const grid = document.createElement('div'); grid.className = 'menu-grid';
     for (const [name, price, description] of items) {
       const card = document.createElement('article'); card.className = 'food-card';
+      const photo = document.createElement('button'); photo.type = 'button'; photo.className = 'food-photo';
+      photo.setAttribute('aria-label', 'تكبير الصورة التوضيحية: ' + name);
+      const img = document.createElement('img'); img.src = 'assets/menu/' + foodImage(category.title, name) + '.webp';
+      img.alt = 'صورة توضيحية لفئة ' + category.title; img.loading = 'lazy'; img.decoding = 'async'; img.width = 640; img.height = 640;
+      photo.append(img);
+      const zoom = document.createElement('span'); zoom.className = 'photo-zoom'; zoom.textContent = '+'; zoom.setAttribute('aria-hidden','true'); photo.append(zoom);
+      photo.addEventListener('click', () => { viewerImage.src = img.src; viewerImage.alt = img.alt; viewerTitle.textContent = name; viewer.showModal(); });
+      card.append(photo);
       const title = document.createElement('h4'); title.textContent = name; card.append(title);
       if (description) { const detail = document.createElement('p'); detail.textContent = description; card.append(detail); }
       const prices = document.createElement('div'); prices.className = 'food-prices';
